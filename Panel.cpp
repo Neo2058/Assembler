@@ -1,5 +1,14 @@
 ﻿#include "Panel.h"
 
+//AFile_Discriptor
+//--------------------------------------------------------------------------------------------------------------
+AFile_Discriptor::AFile_Discriptor(unsigned int attributes, unsigned int file_size_low, unsigned int file_size_hight, wchar_t * file_name)
+	: Attributes(attributes), File_Name(file_name)
+{
+	File_Size = (unsigned long long)file_size_low | ((unsigned long long)file_size_hight << 32);
+}
+//--------------------------------------------------------------------------------------------------------------
+
 
 
 
@@ -11,6 +20,26 @@ APanel::APanel(unsigned short x_pos, unsigned short y_pos, unsigned short width,
 }
 //--------------------------------------------------------------------------------------------------------------
 void APanel::Draw()
+{
+	Draw_Panels();
+	Draw_Files();
+}
+//--------------------------------------------------------------------------------------------------------------
+void APanel::Get_Directory_Files()
+{
+	HANDLE search_handle;
+	WIN32_FIND_DATAW find_data{};
+
+	search_handle = FindFirstFile(L"*.*", &find_data);
+
+	while (FindNextFileW(search_handle, &find_data))
+	{
+		AFile_Discriptor *file_descriptor = new AFile_Discriptor(find_data.dwFileAttributes, find_data.nFileSizeLow, find_data.nFileSizeHigh, find_data.cFileName);
+		Files.push_back(file_descriptor);
+	}
+}
+//--------------------------------------------------------------------------------------------------------------
+void APanel::Draw_Panels()
 {
 	ASymbol symbol(L' ', 0x1b, L' ', L' ');
 	SArea_Pos area_pos(X_Pos + 1,Y_Pos + 1, Screen_Width, Width - 2, Height - 2);
@@ -60,5 +89,35 @@ void APanel::Draw()
 	}
 
 	//Show_Colors(Screen_Buffer, pos, symbol);
+}
+//--------------------------------------------------------------------------------------------------------------
+void APanel::Draw_Files()
+{
+	unsigned short attributes;
+	int x_offset = 0;
+	int y_offset = 0;
+
+	for (auto *file : Files)
+	{
+		if (file->Attributes & FILE_ATTRIBUTE_DIRECTORY)
+			attributes = 0x1f;
+		else
+			attributes = 0x1b;
+
+		SText_Pos pos(X_Pos + x_offset + 1, Y_Pos + y_offset + 2, Screen_Width, attributes);
+		Draw_Text(Screen_Buffer, pos, file->File_Name.c_str() );
+		++y_offset;
+
+		if (y_offset >= Height - 5)
+		{
+			if (x_offset == 0)
+			{
+				x_offset += Width / 2;
+				y_offset = 0;
+			}
+			else
+				break;
+		}
+	}
 }
 //--------------------------------------------------------------------------------------------------------------

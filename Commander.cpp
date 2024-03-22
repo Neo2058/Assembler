@@ -49,7 +49,9 @@ bool AsCommander::Init()
 	Right_Panel = new APanel(half_width, 0, half_width, Screen_Buffer_Info.dwSize.Y - 2, Screen_Buffer, Screen_Buffer_Info.dwSize.X);
 	
 	Build_Menu();
-
+	
+	Left_Panel->Get_Directory_Files();
+	
 	return true;
 }
 //--------------------------------------------------------------------------------------------------------------
@@ -72,7 +74,7 @@ bool AsCommander::Draw()
 		return false;
 	}
 
-	//Sleep(5000);
+	Sleep(50000);
 
 	if (!SetConsoleActiveScreenBuffer(Std_Handle))
 	{
@@ -109,3 +111,4 @@ void AsCommander::Build_Menu()
 	Add_Next_Menu_Item(index, x_pos, x_step, L"10", L"Quit");
 }
 //--------------------------------------------------------------------------------------------------------------
+
