@@ -28,6 +28,9 @@
     <Filter Include="Common">
       <UniqueIdentifier>{4f4c833a-8d0e-4ebe-b4dd-a59475c7a5f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Menu_Item">
+      <UniqueIdentifier>{b1f87b65-5268-4701-a057-98d28458abb5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -43,7 +46,7 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="Menu_Item.cpp">
-      <Filter>Исходные файлы</Filter>
+      <Filter>Menu_Item</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,7 +66,7 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="Menu_Item.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Menu_Item</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

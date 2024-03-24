@@ -4,6 +4,10 @@
 //--------------------------------------------------------------------------------------------------------------
 AsCommander::~AsCommander()
 {
+	if (!SetConsoleActiveScreenBuffer(Std_Output_Handle))
+		printf("Set Console Active Screen Buffer failed - (%d)\n", GetLastError());
+
+
 	delete Left_Panel;
 	delete Right_Panel;
 	delete Screen_Buffer;
@@ -13,11 +17,15 @@ bool AsCommander::Init()
 {
 	SMALL_RECT srctWriteRect;
 	int screen_buffer_size;
+	wchar_t curr_dir[MAX_PATH];
 
-	Std_Handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	GetCurrentDirectory(MAX_PATH, curr_dir);
+
+	Std_Input_Handle = GetStdHandle(STD_INPUT_HANDLE);
+	Std_Output_Handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	Screen_Buffer_Handle = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, CONSOLE_TEXTMODE_BUFFER, 0);
 
-	if (Std_Handle == INVALID_HANDLE_VALUE || Screen_Buffer_Handle == INVALID_HANDLE_VALUE)
+	if (Std_Input_Handle == INVALID_HANDLE_VALUE || Std_Output_Handle == INVALID_HANDLE_VALUE || Screen_Buffer_Handle == INVALID_HANDLE_VALUE)
 	{
 		printf("Create Console Screen Buffer failed - (%d)\n", GetLastError());
 		return false;
@@ -49,10 +57,70 @@ bool AsCommander::Init()
 	Right_Panel = new APanel(half_width, 0, half_width, Screen_Buffer_Info.dwSize.Y - 2, Screen_Buffer, Screen_Buffer_Info.dwSize.X);
 	
 	Build_Menu();
-	
-	Left_Panel->Get_Directory_Files();
+
+	Left_Panel->Get_Directory_Files(std::wstring(curr_dir));
 	
 	return true;
+}
+
+//--------------------------------------------------------------------------------------------------------------
+void AsCommander::Run()
+{
+	unsigned long records_count;
+	INPUT_RECORD input_record[128];
+
+	Can_Run = true;
+	Need_Redraw = true;
+
+	while (Can_Run)
+	{
+		if (PeekConsoleInput(Std_Input_Handle, input_record, 128, &records_count))
+		{
+			if (ReadConsoleInput(Std_Input_Handle, input_record, 1, &records_count))
+			{
+				if (records_count != 0)
+				{
+					if (input_record[0].EventType == KEY_EVENT && input_record[0].Event.KeyEvent.bKeyDown)
+					{
+						switch (input_record[0].Event.KeyEvent.wVirtualKeyCode)
+						{
+						case VK_F10:
+							Can_Run = false;
+							break;
+
+						case VK_UP:
+							Left_Panel->Move_Highlight(true);
+							Need_Redraw = true;
+							break;
+
+						case VK_DOWN:
+							Left_Panel->Move_Highlight(false);
+							Need_Redraw = true;
+							break;
+						
+						case VK_RETURN:
+							Left_Panel->On_Enter();
+							Need_Redraw = true;
+							break;
+
+						default:
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if (Need_Redraw)
+		{
+			if (!Draw())
+				return;
+
+			Need_Redraw = false;
+		}
+
+		Sleep(10);
+	}
 }
 //--------------------------------------------------------------------------------------------------------------
 bool AsCommander::Draw()
@@ -63,8 +131,8 @@ bool AsCommander::Draw()
 	Right_Panel->Draw();
 
 	for (int i = 0; i < 10; i++)
-	{	
-		if(Menu_Items[i] != 0)
+	{
+		if (Menu_Items[i] != 0)
 			Menu_Items[i]->Draw(Screen_Buffer, Screen_Buffer_Info.dwSize.X);
 	}
 
@@ -74,13 +142,7 @@ bool AsCommander::Draw()
 		return false;
 	}
 
-	Sleep(50000);
-
-	if (!SetConsoleActiveScreenBuffer(Std_Handle))
-	{
-		printf("Set Console Active Screen Buffer failed - (%d)\n", GetLastError());
-		return false;
-	}
+	/*Sleep(50000);*/
 	return true;
 }
 //--------------------------------------------------------------------------------------------------------------

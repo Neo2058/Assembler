@@ -7,9 +7,8 @@ int main(void)
 	
 	if (!Commander.Init())
 		return -1;
-	
-	if (!Commander.Draw())
-		return -1;
+
+	Commander.Run();
 
 	return 0;
 }
