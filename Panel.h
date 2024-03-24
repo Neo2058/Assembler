@@ -27,6 +27,7 @@ public:
 private:
 	void Draw_Panels();
 	void Draw_Files();
+	void Draw_Highlight();
 
 	unsigned short X_Pos, Y_Pos;
 	unsigned short Width, Height;
