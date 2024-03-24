@@ -84,7 +84,6 @@ void APanel::On_Enter()
 		{
 			std::wstring new_curr_dir = Current_Directory + L"\\" + file_discriptor->File_Name;
 			Get_Directory_Files(new_curr_dir);
-
 		}
 	}
 }
